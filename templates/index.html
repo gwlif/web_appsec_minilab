@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Локальная учебная лаборатория Web AppSec: сравнение уязвимых и исправленных эндпоинтов.">
+  <title>Web AppSec Mini Lab</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+  <header>
+    <div class="shell">
+      <nav class="topbar" aria-label="Навигация по лаборатории">
+        <a class="topbar__brand" href="#top" aria-label="Web AppSec Mini Lab — начало">
+          <span class="brand-mark" aria-hidden="true">W</span>
+          <span>WEB SECURITY <span class="brand-divider">/</span> LAB 02</span>
+        </a>
+        <div class="topbar__right">
+          <a href="#sql">SQLi</a>
+          <a href="#idor">IDOR</a>
+          <a href="#xss">XSS</a>
+          <span class="local-indicator"><span aria-hidden="true"></span> локально</span>
+        </div>
+      </nav>
+      <div id="top" class="hero-copy">
+      <div class="eyebrow">Практикум по безопасности веб-приложений</div>
+      <h1>Web AppSec Mini Lab</h1>
+      <p class="lead">Интерактивная лаборатория для сравнения уязвимых и исправленных веб-эндпоинтов. Исследуй причину проблемы, воспроизведи её на учебных данных и проверь, что исправление меняет результат.</p>
+      <div class="notice"><strong>Только локальное использование.</strong> Эндпоинты <code>/lab/vulnerable/*</code> намеренно уязвимы. Не публикуй это приложение в интернете и не вводи реальные данные.</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div id="sql" class="section-head">
+      <span class="section-index">01</span>
+      <div class="section-copy"><h2>SQL Injection</h2>
+      <p>Сравни конкатенацию SQL со связанными параметрами запроса.</p></div>
+    </div>
+    <section class="grid" aria-label="Лаборатория SQL Injection">
+      <article class="card">
+        <span class="tag tag-red">Уязвимый вариант</span>
+        <h3>Поиск с конкатенацией SQL</h3>
+        <p>Ввод напрямую включается в SQL-строку. Попробуй учебную строку <code>' OR 1=1 --</code>.</p>
+        <form class="search-form" data-endpoint="/lab/vulnerable/search">
+          <label for="sql-vuln-q">Название заметки или тестовая строка</label>
+          <input id="sql-vuln-q" name="q" value="' OR 1=1 --" autocomplete="off">
+          <div class="form-row mt-10"><button class="button-red" type="submit">Выполнить уязвимый поиск</button></div>
+        </form>
+        <pre class="output" id="sql-vuln-output" aria-live="polite"></pre>
+      </article>
+      <article class="card">
+        <span class="tag tag-green">Исправленный вариант</span>
+        <h3>Поиск с параметризованным запросом</h3>
+        <p>База данных получает ввод как значение, а не как часть структуры SQL-запроса.</p>
+        <form class="search-form" data-endpoint="/search">
+          <label for="sql-safe-q">Название заметки или тестовая строка</label>
+          <input id="sql-safe-q" name="q" value="' OR 1=1 --" autocomplete="off">
+          <div class="form-row mt-10"><button class="button-green" type="submit">Выполнить безопасный поиск</button></div>
+        </form>
+        <pre class="output" id="sql-safe-output" aria-live="polite"></pre>
+      </article>
+    </section>
+
+    <div id="idor" class="section-head">
+      <span class="section-index">02</span>
+      <div class="section-copy"><h2>Broken Access Control / IDOR</h2>
+      <p>Войди как Алиса и попробуй открыть заметку Боба с ID 2.</p></div>
+    </div>
+    <section class="grid" aria-label="Лаборатория контроля доступа">
+      <article class="card">
+        <h3>Учебный вход</h3>
+        <p>Демо-учётные записи: <code>alice / alice-demo-pass</code> и <code>bob / bob-demo-pass</code>.</p>
+        <form id="login-form">
+          <div class="form-row">
+            <div class="field"><label for="username">Пользователь</label><input id="username" name="username" value="alice" autocomplete="username"></div>
+            <div class="field"><label for="password">Пароль</label><input id="password" name="password" type="password" value="alice-demo-pass" autocomplete="current-password"></div>
+          </div>
+          <div class="form-row mt-10"><button type="submit">Войти</button></div>
+        </form>
+        <pre class="output" id="login-output" aria-live="polite"></pre>
+      </article>
+      <article class="card">
+        <h3>Запрос заметки</h3>
+        <p>После входа проверь один и тот же ID в обоих вариантах. Исправленный маршрут должен запрещать чтение чужой заметки.</p>
+        <label for="note-id">ID заметки</label>
+        <input id="note-id" type="number" min="1" value="2">
+        <div class="form-row mt-12">
+          <button class="button-red" type="button" id="note-vuln">Запросить уязвимый маршрут</button>
+          <button class="button-green" type="button" id="note-safe">Запросить исправленный маршрут</button>
+        </div>
+        <pre class="output" id="note-output" aria-live="polite"></pre>
+      </article>
+    </section>
+
+    <div id="xss" class="section-head">
+      <span class="section-index">03</span>
+      <div class="section-copy"><h2>Reflected XSS</h2>
+      <p>Открой ответы в новых вкладках и сравни необработанный HTML с контекстным экранированием.</p></div>
+    </div>
+    <section class="grid" aria-label="Лаборатория XSS">
+      <article class="card">
+        <span class="tag tag-red">Уязвимый вариант</span>
+        <h3>Отражение ввода без экранирования</h3>
+        <p>Проверяй только на этой локальной лаборатории. Пример для наблюдения: <code>&lt;script&gt;alert(1)&lt;/script&gt;</code>.</p>
+        <form action="/lab/vulnerable/greet" method="get" target="_blank">
+          <label for="xss-vuln-name">Имя</label>
+          <input id="xss-vuln-name" name="name" value="&lt;script&gt;alert(1)&lt;/script&gt;" autocomplete="off">
+          <div class="form-row mt-10"><button class="button-red" type="submit">Открыть уязвимый ответ</button></div>
+        </form>
+      </article>
+      <article class="card">
+        <span class="tag tag-green">Исправленный вариант</span>
+        <h3>Автоэкранирование шаблона</h3>
+        <p>Jinja преобразует символы HTML в безопасное текстовое представление.</p>
+        <form action="/greet" method="get" target="_blank">
+          <label for="xss-safe-name">Имя</label>
+          <input id="xss-safe-name" name="name" value="&lt;script&gt;alert(1)&lt;/script&gt;" autocomplete="off">
+          <div class="form-row mt-10"><button class="button-green" type="submit">Открыть исправленный ответ</button></div>
+        </form>
+      </article>
+    </section>
+
+    <div id="routes" class="section-head">
+      <span class="section-index">04</span>
+      <div class="section-copy"><h2>Маршруты и защитные механизмы</h2>
+      <p>Главная страница — интерфейс лаборатории, а JSON-статус доступен отдельно.</p></div>
+    </div>
+    <section class="card">
+      <dl class="route-list">
+        <dt>Проверка состояния</dt><dd><a href="/health"><code>/health</code></a> — JSON со статусом приложения.</dd>
+        <dt>Вход</dt><dd><code>POST /login</code> — вход с демо-учётной записью.</dd>
+        <dt>Безопасные маршруты</dt><dd><code>/search</code>, <code>/notes/&lt;id&gt;</code>, <code>/greet</code>.</dd>
+        <dt>Уязвимые маршруты</dt><dd><code>/lab/vulnerable/search</code>, <code>/lab/vulnerable/notes/&lt;id&gt;</code>, <code>/lab/vulnerable/greet</code>.</dd>
+      </dl>
+      <p class="small">Безопасные маршруты также возвращают базовые HTTP-заголовки защиты. Это демонстрация отдельных механизмов, а не готовая production-система.</p>
+    </section>
+  </main>
+
+  <footer><div class="shell">Web AppSec Mini Lab · Python · Flask · SQLite · Учебный проект для локального исследования уязвимостей и проверки исправлений.</div></footer>
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+  </body>
+</html>
